@@ -5,26 +5,37 @@ document.addEventListener('DOMContentLoaded', function () {
     background: rgba(0,0,0,0.7);
     color: #fff;
     font-size: 14px;
-    padding: 12px;
-    text-align: center;
+    padding: 12px 20px;
     position: fixed;
     bottom: 0;
     left: 0;
     z-index: 9999;
     backdrop-filter: blur(6px);
-    line-height: 1.8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
   `;
-  footer.innerHTML = `正在获取访问信息...`;
+
+  const left = document.createElement('div');
+  const right = document.createElement('div');
+
+  left.innerHTML = `正在获取访问信息...`;
+  left.style.lineHeight = '1.8';
+  right.innerHTML = `<img src="./images/character.png" style="height:60px;border-radius:8px;">`;
+
+  footer.appendChild(left);
+  footer.appendChild(right);
   document.body.appendChild(footer);
 
-  // 当前时间
+  // 时间
   function getDateStr() {
     const now = new Date();
     const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
     return `📅 今天是 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weekdays[now.getDay()]}`;
   }
 
-  // 系统 & 浏览器
+  // 系统 + 浏览器
   function getBrowserInfo() {
     const ua = navigator.userAgent;
     const os = /Windows/i.test(ua) ? 'Windows' :
@@ -39,13 +50,13 @@ document.addEventListener('DOMContentLoaded', function () {
     return { os, browser };
   }
 
-  // IP 地理位置
+  // 获取 IP + 地理
   fetch('https://ipapi.co/json/')
     .then(res => res.json())
     .then(data => {
       const { ip, country_name, region, city } = data;
       const { os, browser } = getBrowserInfo();
-      footer.innerHTML = `
+      left.innerHTML = `
         🏠 欢迎您来自 ${country_name} ${region} ${city} 的朋友<br>
         ${getDateStr()}<br>
         📖 您的 IP 是: ${ip}<br>
@@ -55,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .catch(() => {
       const { os, browser } = getBrowserInfo();
-      footer.innerHTML = `
+      left.innerHTML = `
         🏠 欢迎您，朋友<br>
         ${getDateStr()}<br>
         📖 IP 信息获取失败<br>
@@ -64,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
       `;
     });
 
-  // ✨ 荧光粒子泡泡效果
+  // ✨ 粒子特效
   const style = document.createElement('style');
   style.innerHTML = `
     .glow-dot {
