@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const footer = document.createElement('div');
   footer.style.cssText = `
     width: 100%;
-    background: rgba(30,30,30,0.4);
+    background: rgba(30, 30, 30, 0.4);
     color: #fff;
     font-size: 14px;
     padding: 12px 20px;
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     bottom: 0;
     left: 0;
     z-index: 9999;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,54 +28,80 @@ document.addEventListener('DOMContentLoaded', function () {
   footer.appendChild(right);
   document.body.appendChild(footer);
 
-  // 时间
   function getDateStr() {
     const now = new Date();
     const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
     return `📅 今天是 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weekdays[now.getDay()]}`;
   }
 
-  // 系统 + 浏览器
   function getBrowserInfo() {
     const ua = navigator.userAgent;
     const os = /Windows/i.test(ua) ? 'Windows' :
                /Android/i.test(ua) ? 'Android' :
                /iPhone|iPad/i.test(ua) ? 'iOS' :
                /Mac/i.test(ua) ? 'MacOS' : '未知系统';
-
     const browser = /Chrome\/([\d.]+)/.exec(ua) ? `Chrome (${RegExp.$1})` :
                     /Firefox\/([\d.]+)/.exec(ua) ? `Firefox (${RegExp.$1})` :
                     /Safari\/([\d.]+)/.exec(ua) ? `Safari` : '未知浏览器';
-
     return { os, browser };
   }
 
-  // 获取 IP + 地理
-  fetch('https://ipapi.co/json/')
+  // 获取 IP（为高德定位准备）
+  fetch('https://api.ipify.org?format=json')
     .then(res => res.json())
-    .then(data => {
-      const { ip, country_name, region, city } = data;
-      const { os, browser } = getBrowserInfo();
-      left.innerHTML = `
-        🏠 欢迎您来自 ${country_name} ${region} ${city} 的朋友<br>
-        ${getDateStr()}<br>
-        📖 您的 IP 是: ${ip}<br>
-        🖥️ 您使用的是 ${os} 操作系统<br>
-        🌐 您使用的是 ${browser} 浏览器
-      `;
+    .then(ipData => {
+      const ip = ipData.ip;
+      const amapKey = '你的高德key'; // 👈 请替换这里！
+
+      // 用高德获取中文地址
+      fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
+        .then(res => res.json())
+        .then(locationData => {
+          const province = locationData.province || '';
+          const city = locationData.city || '';
+          const { os, browser } = getBrowserInfo();
+
+          left.innerHTML = `
+            🏠 欢迎您来自 中国 ${province} ${city} 的朋友<br>
+            ${getDateStr()}<br>
+            📖 您的 IP 是: ${ip}<br>
+            🖥️ 您使用的是 ${os} 操作系统<br>
+            🌐 您使用的是 ${browser} 浏览器
+          `;
+        })
+        .catch(() => {
+          fallbackLoad(ip); // 如果高德失败，fallback 到英文翻译
+        });
     })
     .catch(() => {
-      const { os, browser } = getBrowserInfo();
-      left.innerHTML = `
-        🏠 欢迎您，朋友<br>
-        ${getDateStr()}<br>
-        📖 IP 信息获取失败<br>
-        🖥️ 您使用的是 ${os} 操作系统<br>
-        🌐 您使用的是 ${browser} 浏览器
-      `;
+      fallbackLoad('未知IP');
     });
 
-  // ✨ 粒子特效
+  // Fallback 方案：英文接口 + 离线翻译
+  function fallbackLoad(ip) {
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        let { country_name, region, city } = data;
+        const { os, browser } = getBrowserInfo();
+
+        if (window.ChinaGeoMap) {
+          country_name = window.ChinaGeoMap.country[country_name] || country_name;
+          region = window.ChinaGeoMap.province[region] || region;
+          city = window.ChinaGeoMap.city[city] || city;
+        }
+
+        left.innerHTML = `
+          🏠 欢迎您来自 ${country_name} ${region} ${city} 的朋友<br>
+          ${getDateStr()}<br>
+          📖 您的 IP 是: ${ip}<br>
+          🖥️ 您使用的是 ${os} 操作系统<br>
+          🌐 您使用的是 ${browser} 浏览器
+        `;
+      });
+  }
+
+  // ✨ 荧光泡泡
   const style = document.createElement('style');
   style.innerHTML = `
     .glow-dot {
