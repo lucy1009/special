@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const footer = document.createElement('div');
   footer.style.cssText = `
     width: 100%;
-    background: rgba(0,0,0,0.7);
+    background: rgba(30,30,30,0.4);
     color: #fff;
     font-size: 14px;
     padding: 12px 20px;
