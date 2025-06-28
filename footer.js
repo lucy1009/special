@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(res => res.json())
     .then(ipData => {
       const ip = ipData.ip;
-      const amapKey = '你的高德key'; // 👈 请替换这里！
+      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // 👈 请替换这里！
 
       // 用高德获取中文地址
       fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
