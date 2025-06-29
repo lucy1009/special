@@ -33,7 +33,7 @@
     .character {
       width: 80px;
       height: auto;
-      animation: float 3s infinite;
+      animation: float 3s infinite; /* 卡通人物上下飘 */
     }
     @keyframes float {
       0% { transform: translateY(0); }
@@ -68,7 +68,7 @@
   </footer>
 
   <script>
-    // 动态生成半透明泡泡
+    // 动态生成半透明泡泡，从底部开始向上飘
     function createBubble() {
       const bubble = document.createElement('div');
       const size = Math.random() * 20 + 10;
@@ -76,7 +76,7 @@
       bubble.style.width = `${size}px`;
       bubble.style.height = `${size}px`;
       bubble.style.left = `${Math.random() * 100}vw`;
-      bubble.style.bottom = '-20px'; // 从下方生成
+      bubble.style.bottom = '0'; // 从底部开始
       document.body.appendChild(bubble);
 
       // 动画结束后移除泡泡
@@ -88,15 +88,15 @@
     const styleSheet = document.styleSheets[0];
     styleSheet.insertRule(`
       @keyframes rise {
-        0% { bottom: -20px; opacity: 0.8; }
+        0% { bottom: 0; opacity: 0.8; }
         100% { bottom: 100vh; opacity: 0; }
       }
     `, styleSheet.cssRules.length);
 
-    // 更新页脚信息
+    // 更新页脚信息，只显示日期
     function updateFooterInfo() {
       const now = new Date();
-      const date = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'medium' });
+      const date = now.toLocaleString('zh-CN', { dateStyle: 'full' }); // 只显示日期
       const hostInfo = {
         cpu: '2.46% / 20.45% / 24.99%',
         memory: '65.32 MiB / 48.09 MiB',
@@ -107,7 +107,7 @@
       document.getElementById('footer-info').innerHTML = `
         主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
         IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
-        日期: ${date} (2025-06-29 10:00 AM +08)
+        日期: ${date} (2025-06-29)
       `;
     }
 
