@@ -34,12 +34,7 @@
     .character {
       width: 80px;
       height: auto;
-      animation: float 3s infinite;
-    }
-    @keyframes float {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0); }
+      /* 移除浮动动画 */
     }
     .bubble {
       position: absolute;
@@ -59,6 +54,10 @@
       .info {
         font-size: 12px;
       }
+    }
+    @keyframes rise {
+      0% { bottom: 10px; opacity: 0.8; }
+      100% { bottom: 100vh; opacity: 0; }
     }
   </style>
 </head>
@@ -83,15 +82,6 @@
     }
     setInterval(createBubble, 300);
 
-    // 定义上升动画
-    const styleSheet = document.styleSheets[0];
-    styleSheet.insertRule(`
-      @keyframes rise {
-        0% { bottom: 10px; opacity: 0.8; }
-        100% { bottom: 100vh; opacity: 0; }
-      }
-    `, styleSheet.cssRules.length);
-
     // 更新信息，使用动态日期和 IP
     function updateEffectInfo() {
       const now = new Date();
@@ -108,7 +98,7 @@
         .then(response => response.json())
         .then(data => {
           info.ip = data.ip;
-          // 使用 ipinfo.io 获取地区（免费，需网络支持）
+          // 使用 ipinfo.io 获取地区
           return fetch(`https://ipinfo.io/${data.ip}/json`);
         })
         .then(response => response.json())
@@ -134,7 +124,7 @@
 
     // 初始加载和定时更新
     updateEffectInfo();
-    setInterval(updateEffectInfo, 10000); // 每 10 秒更新
+    setInterval(updateEffectInfo, 10000);
   </script>
 </body>
 </html>
