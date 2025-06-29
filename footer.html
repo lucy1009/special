@@ -11,6 +11,7 @@
       overflow-x: hidden;
       position: relative;
       background: #000; /* 深色背景便于泡泡效果 */
+      min-height: 100vh; /* 确保页面有足够高度 */
     }
     footer {
       position: fixed;
@@ -44,7 +45,7 @@
       position: absolute;
       border-radius: 50%;
       background: rgba(0, 191, 255, 0.4); /* 半透明浅蓝色泡泡 */
-      animation: rise 5s linear infinite;
+      animation: rise 5s linear forwards; /* forwards 确保动画完成 */
     }
     @media (max-width: 768px) {
       footer {
@@ -75,8 +76,8 @@
       bubble.className = 'bubble';
       bubble.style.width = `${size}px`;
       bubble.style.height = `${size}px`;
-      bubble.style.left = `${Math.random() * 100}vw`;
-      bubble.style.bottom = '0'; // 从底部开始
+      bubble.style.left = `${Math.random() * 100}vw`; // 随机横向位置
+      bubble.style.bottom = '10px'; // 从页脚上方稍高处开始
       document.body.appendChild(bubble);
 
       // 动画结束后移除泡泡
@@ -88,7 +89,7 @@
     const styleSheet = document.styleSheets[0];
     styleSheet.insertRule(`
       @keyframes rise {
-        0% { bottom: 0; opacity: 0.8; }
+        0% { bottom: 10px; opacity: 0.8; }
         100% { bottom: 100vh; opacity: 0; }
       }
     `, styleSheet.cssRules.length);
