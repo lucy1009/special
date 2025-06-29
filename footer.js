@@ -46,21 +46,27 @@ document.addEventListener('DOMContentLoaded', function () {
     return { os, browser };
   }
 
-  // 获取 IP（为高德定位准备）
+  // 获取公网 IP（供高德使用）
   fetch('https://api.ipify.org?format=json')
     .then(res => res.json())
     .then(ipData => {
       const ip = ipData.ip;
-      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // 👈 请替换这里！
+      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // ← 请改成你自己的 key
 
-      // 用高德获取中文地址
+      // 调用高德 IP 接口
       fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
         .then(res => res.json())
         .then(locationData => {
-          const province = locationData.province || '';
-          const city = locationData.city || '';
-          const { os, browser } = getBrowserInfo();
+          const province = locationData.province;
+          const city = locationData.city;
 
+          // 如果返回为空或是数组（高德失败），使用 fallback
+          if (!province || !city || Array.isArray(province) || Array.isArray(city)) {
+            fallbackLoad(ip);
+            return;
+          }
+
+          const { os, browser } = getBrowserInfo();
           left.innerHTML = `
             🏠 欢迎您来自 中国 ${province} ${city} 的朋友<br>
             ${getDateStr()}<br>
@@ -70,14 +76,14 @@ document.addEventListener('DOMContentLoaded', function () {
           `;
         })
         .catch(() => {
-          fallbackLoad(ip); // 如果高德失败，fallback 到英文翻译
+          fallbackLoad(ip);
         });
     })
     .catch(() => {
       fallbackLoad('未知IP');
     });
 
-  // Fallback 方案：英文接口 + 离线翻译
+  // fallback：ipapi + 离线中文翻译
   function fallbackLoad(ip) {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
@@ -101,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
-  // ✨ 荧光泡泡
+  // ✨ 荧光气泡特效
   const style = document.createElement('style');
   style.innerHTML = `
     .glow-dot {
