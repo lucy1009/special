@@ -9,14 +9,15 @@
       margin: 0;
       font-family: 'MiSans', Arial, sans-serif;
       overflow-x: hidden;
-      position: relative; /* 确保气泡相对定位 */
+      position: relative;
+      background: #000; /* 黑色背景便于数字雨效果 */
     }
     footer {
       position: fixed;
       bottom: 0;
       width: 100%;
       background: rgba(255, 255, 255, 0.7); /* 半透明白色 */
-      backdrop-filter: blur(5px); /* 模糊背景 */
+      backdrop-filter: blur(5px);
       padding: 10px 20px;
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
       z-index: 1000;
@@ -39,11 +40,11 @@
       50% { transform: translateY(-10px); }
       100% { transform: translateY(0); }
     }
-    .bubble {
+    .digit {
       position: absolute;
-      border-radius: 50%;
-      background: rgba(0, 191, 255, 0.6); /* 浅蓝色气泡 */
-      animation: rise 5s linear infinite;
+      font-size: 14px;
+      color: #0f0; /* 绿色数字，矩阵风格 */
+      animation: fall 3s linear infinite;
     }
     @media (max-width: 768px) {
       footer {
@@ -67,28 +68,26 @@
   </footer>
 
   <script>
-    // 动态生成气泡
-    function createBubble() {
-      const bubble = document.createElement('div');
-      const size = Math.random() * 20 + 10;
-      bubble.className = 'bubble';
-      bubble.style.width = `${size}px`;
-      bubble.style.height = `${size}px`;
-      bubble.style.left = `${Math.random() * 100}vw`;
-      bubble.style.bottom = '-20px'; // 从下方生成
-      document.body.appendChild(bubble);
+    // 动态生成数字雨
+    function createDigit() {
+      const digit = document.createElement('div');
+      digit.className = 'digit';
+      digit.textContent = Math.random() > 0.5 ? '0' : '1'; // 随机 0 或 1
+      digit.style.left = `${Math.random() * 100}vw`; // 随机横向位置
+      digit.style.top = '-20px'; // 从顶部生成
+      document.body.appendChild(digit);
 
-      // 动画结束后移除气泡
-      bubble.addEventListener('animationend', () => bubble.remove());
+      // 动画结束后移除数字
+      digit.addEventListener('animationend', () => digit.remove());
     }
-    setInterval(createBubble, 300); // 每 300ms 生成一个气泡
+    setInterval(createDigit, 100); // 每 100ms 生成一个数字
 
-    // 定义上升动画
+    // 定义下落动画
     const styleSheet = document.styleSheets[0];
     styleSheet.insertRule(`
-      @keyframes rise {
-        0% { bottom: -20px; opacity: 1; }
-        100% { bottom: 100vh; opacity: 0; }
+      @keyframes fall {
+        0% { top: -20px; opacity: 1; }
+        100% { top: 100vh; opacity: 0.5; }
       }
     `, styleSheet.cssRules.length);
 
@@ -100,14 +99,14 @@
       const hostInfo = {
         cpu: '2.46% / 20.45% / 24.99%',
         memory: '65.32 MiB / 48.09 MiB',
-        ip: '112.117.5.132', // 示例 IP
+        ip: '112.117.5.132',
         region: '中国'
       };
 
       document.getElementById('footer-info').innerHTML = `
         主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
         IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
-        日期: ${date} (2025-06-29 09:47 AM +08)
+        日期: ${date} (2025-06-29 09:51 AM +08)
       `;
     }
 
