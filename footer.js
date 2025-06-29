@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const footer = document.createElement('div');
   footer.style.cssText = `
     width: 100%;
-    background: rgba(30, 30, 30, 0.4);
+    background: rgba(30, 30, 30, 0.5);
     color: #fff;
     font-size: 14px;
     padding: 12px 20px;
@@ -50,22 +50,25 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(res => res.json())
     .then(ipData => {
       const ip = ipData.ip;
-      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // ← 请改成你自己的 key
+      const amapKey = '你的高德Key'; // ← 请替换为你申请的高德 Key
 
       fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
         .then(res => res.json())
         .then(locationData => {
-          const province = locationData.province;
-          const city = locationData.city;
+          let province = locationData.province;
+          let city = locationData.city;
 
-          if (!province || !city || Array.isArray(province) || Array.isArray(city)) {
-            fallbackLoad(ip);
-            return;
+          // 使用地理中文库转换
+          if (window.ChinaGeoMap) {
+            province = window.ChinaGeoMap.province[province] || province;
+            city = window.ChinaGeoMap.city[city] || city;
           }
 
           const { os, browser } = getBrowserInfo();
+          const locationStr = (province === city) ? province : `${province} ${city}`;
+
           left.innerHTML = `
-            🏠 欢迎您来自 中国 ${province} ${city} 的朋友<br>
+            🏠 欢迎您来自 中国 ${locationStr} 的朋友<br>
             ${getDateStr()}<br>
             📖 您的 IP 是: ${ip}<br>
             🖥️ 您使用的是 ${os} 操作系统<br>
@@ -83,14 +86,17 @@ document.addEventListener('DOMContentLoaded', function () {
         let { country_name, region, city } = data;
         const { os, browser } = getBrowserInfo();
 
+        // 中文翻译
         if (window.ChinaGeoMap) {
           country_name = window.ChinaGeoMap.country[country_name] || country_name;
           region = window.ChinaGeoMap.province[region] || region;
           city = window.ChinaGeoMap.city[city] || city;
         }
 
+        const locationStr = (region === city) ? region : `${region} ${city}`;
+
         left.innerHTML = `
-          🏠 欢迎您来自 ${country_name} ${region} ${city} 的朋友<br>
+          🏠 欢迎您来自 ${country_name} ${locationStr} 的朋友<br>
           ${getDateStr()}<br>
           📖 您的 IP 是: ${ip}<br>
           🖥️ 您使用的是 ${os} 操作系统<br>
