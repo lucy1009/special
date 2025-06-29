@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // 创建底部信息栏
   const footer = document.createElement('div');
   footer.style.cssText = `
     width: 100%;
@@ -28,6 +29,73 @@ document.addEventListener('DOMContentLoaded', function () {
   footer.appendChild(right);
   document.body.appendChild(footer);
 
+  // 创建泡泡容器
+  const bubbleContainer = document.createElement('div');
+  bubbleContainer.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    overflow: hidden;
+  `;
+  document.body.appendChild(bubbleContainer);
+
+  // 泡泡特效
+  function createBubble() {
+    const bubble = document.createElement('div');
+    const size = Math.random() * 60 + 20;
+    const posX = Math.random() * window.innerWidth;
+    const duration = Math.random() * 15 + 10;
+    const delay = Math.random() * 5;
+    const opacity = Math.random() * 0.5 + 0.3;
+    
+    bubble.style.cssText = `
+      position: absolute;
+      width: ${size}px;
+      height: ${size}px;
+      background: rgba(255, 255, 255, ${opacity});
+      border-radius: 50%;
+      bottom: -${size}px;
+      left: ${posX}px;
+      animation: float-up ${duration}s linear ${delay}s infinite;
+      filter: blur(${Math.random() * 3 + 1}px);
+    `;
+
+    bubbleContainer.appendChild(bubble);
+
+    // 移除超出屏幕的泡泡
+    setTimeout(() => {
+      bubble.remove();
+    }, (duration + delay) * 1000);
+  }
+
+  // 添加泡泡动画样式
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes float-up {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: ${Math.random() * 0.5 + 0.3};
+      }
+      50% {
+        transform: translateY(-50vh) scale(0.8);
+        opacity: ${Math.random() * 0.3 + 0.1};
+      }
+      100% {
+        transform: translateY(-100vh) scale(0.5);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 定期生成泡泡
+  setInterval(createBubble, 500);
+
+  // 原有功能函数
   function getDateStr() {
     const now = new Date();
     const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
@@ -46,62 +114,69 @@ document.addEventListener('DOMContentLoaded', function () {
     return { os, browser };
   }
 
-  fetch('https://api.ipify.org?format=json')
-    .then(res => res.json())
-    .then(ipData => {
-      const ip = ipData.ip;
-      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // ← 请替换为你申请的高德 Key
-
-      fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
-        .then(res => res.json())
-        .then(locationData => {
-          let province = locationData.province;
-          let city = locationData.city;
-
-          // 使用地理中文库转换
-          if (window.ChinaGeoMap) {
-            province = window.ChinaGeoMap.province[province] || province;
-            city = window.ChinaGeoMap.city[city] || city;
-          }
-
-          const { os, browser } = getBrowserInfo();
-          const locationStr = (province === city) ? province : `${province} ${city}`;
-
-          left.innerHTML = `
-            🏠 欢迎您来自 中国 ${locationStr} 的朋友<br>
-            ${getDateStr()}<br>
-            📖 您的 IP 是: ${ip}<br>
-            🖥️ 您使用的是 ${os} 操作系统<br>
-            🌐 您使用的是 ${browser} 浏览器
-          `;
-        })
-        .catch(() => fallbackLoad(ip));
-    })
-    .catch(() => fallbackLoad('未知IP'));
+  // 改进后的IP获取逻辑
+  function loadVisitorInfo() {
+    fetch('https://api.ipify.org?format=json')
+      .then(res => {
+        if (!res.ok) throw new Error('IP获取失败');
+        return res.json();
+      })
+      .then(ipData => {
+        const ip = ipData.ip;
+        // 这里建议使用你自己的API密钥或后端服务
+        fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=85caef68c262151c986a61d063bbd5a9`)//高德api
+          .then(res => {
+            if (!res.ok) throw new Error('高德定位失败');
+            return res.json();
+          })
+          .then(locationData => {
+            updateUI(ip, locationData.province, locationData.city);
+          })
+          .catch(() => fallbackLoad(ip));
+      })
+      .catch(() => fallbackLoad('未知IP'));
+  }
 
   function fallbackLoad(ip) {
     fetch('https://ipapi.co/json/')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('备用IP获取失败');
+        return res.json();
+      })
       .then(data => {
-        let { country_name, region, city } = data;
+        updateUI(ip, data.region, data.city, data.country_name);
+      })
+      .catch(() => {
         const { os, browser } = getBrowserInfo();
-
-        // 中文翻译
-        if (window.ChinaGeoMap) {
-          country_name = window.ChinaGeoMap.country[country_name] || country_name;
-          region = window.ChinaGeoMap.province[region] || region;
-          city = window.ChinaGeoMap.city[city] || city;
-        }
-
-        const locationStr = (region === city) ? region : `${region} ${city}`;
-
         left.innerHTML = `
-          🏠 欢迎您来自 ${country_name} ${locationStr} 的朋友<br>
           ${getDateStr()}<br>
-          📖 您的 IP 是: ${ip}<br>
+          📖 无法获取位置信息<br>
           🖥️ 您使用的是 ${os} 操作系统<br>
           🌐 您使用的是 ${browser} 浏览器
         `;
       });
   }
+
+  function updateUI(ip, province, city, country = '中国') {
+    // 使用地理中文库转换
+    if (window.ChinaGeoMap) {
+      province = window.ChinaGeoMap.province[province] || province;
+      city = window.ChinaGeoMap.city[city] || city;
+      country = window.ChinaGeoMap.country[country] || country;
+    }
+
+    const { os, browser } = getBrowserInfo();
+    const locationStr = (province === city) ? province : `${province} ${city}`;
+
+    left.innerHTML = `
+      🏠 欢迎您来自 ${country} ${locationStr} 的朋友<br>
+      ${getDateStr()}<br>
+      📖 您的 IP 是: ${ip}<br>
+      🖥️ 您使用的是 ${os} 操作系统<br>
+      🌐 您使用的是 ${browser} 浏览器
+    `;
+  }
+
+  // 启动信息加载
+  loadVisitorInfo();
 });
