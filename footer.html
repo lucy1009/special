@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Footer</title>
+  <title>Matrix-Style Footer</title>
   <style>
     body {
       margin: 0;
-      font-family: 'MiSans', Arial, sans-serif;
+      font-family: 'MiSans', 'Courier New', monospace; /* 矩阵风格字体 */
       overflow-x: hidden;
       position: relative;
-      background: #000; /* 黑色背景便于数字雨效果 */
+      background: #000; /* 黑色背景 */
     }
     footer {
       position: fixed;
@@ -40,11 +40,11 @@
       50% { transform: translateY(-10px); }
       100% { transform: translateY(0); }
     }
-    .digit {
+    .matrix-stream {
       position: absolute;
       font-size: 14px;
-      color: #0f0; /* 绿色数字，矩阵风格 */
-      animation: fall 3s linear infinite;
+      color: #00FF00; /* 亮绿色 */
+      animation: matrixFall 4s linear infinite;
     }
     @media (max-width: 768px) {
       footer {
@@ -68,26 +68,35 @@
   </footer>
 
   <script>
-    // 动态生成数字雨
-    function createDigit() {
-      const digit = document.createElement('div');
-      digit.className = 'digit';
-      digit.textContent = Math.random() > 0.5 ? '0' : '1'; // 随机 0 或 1
-      digit.style.left = `${Math.random() * 100}vw`; // 随机横向位置
-      digit.style.top = '-20px'; // 从顶部生成
-      document.body.appendChild(digit);
+    // 矩阵字符集
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()+-=[]{}|;:,.<>?あいうえおかきくけこさしすせそ'.split('');
 
-      // 动画结束后移除数字
-      digit.addEventListener('animationend', () => digit.remove());
+    // 创建矩阵流
+    function createMatrixStream() {
+      const stream = document.createElement('div');
+      const length = Math.floor(Math.random() * 20) + 10; // 流长度 10-30
+      stream.className = 'matrix-stream';
+      stream.style.left = `${Math.random() * 100}vw`; // 随机横向位置
+      stream.style.top = '-50px'; // 从上方生成
+      let streamContent = '';
+
+      for (let i = 0; i < length; i++) {
+        streamContent += `<span style="opacity: ${1 - i / length}">${chars[Math.floor(Math.random() * chars.length)]}</span><br>`;
+      }
+      stream.innerHTML = streamContent;
+      document.body.appendChild(stream);
+
+      // 动画结束后移除流
+      stream.addEventListener('animationend', () => stream.remove());
     }
-    setInterval(createDigit, 100); // 每 100ms 生成一个数字
+    setInterval(createMatrixStream, 50); // 每 50ms 生成一个流
 
     // 定义下落动画
     const styleSheet = document.styleSheets[0];
     styleSheet.insertRule(`
-      @keyframes fall {
-        0% { top: -20px; opacity: 1; }
-        100% { top: 100vh; opacity: 0.5; }
+      @keyframes matrixFall {
+        0% { top: -50px; }
+        100% { top: 100vh; }
       }
     `, styleSheet.cssRules.length);
 
@@ -95,7 +104,6 @@
     function updateFooterInfo() {
       const now = new Date();
       const date = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'medium' });
-      // 模拟主机信息、IP 和地区（需替换为实际数据）
       const hostInfo = {
         cpu: '2.46% / 20.45% / 24.99%',
         memory: '65.32 MiB / 48.09 MiB',
@@ -106,13 +114,13 @@
       document.getElementById('footer-info').innerHTML = `
         主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
         IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
-        日期: ${date} (2025-06-29 09:51 AM +08)
+        日期: ${date} (2025-06-29 09:55 AM +08)
       `;
     }
 
     // 初始加载和定时更新
     updateFooterInfo();
-    setInterval(updateFooterInfo, 10000); // 每 10 秒更新
+    setInterval(updateFooterInfo, 10000);
   </script>
 </body>
 </html>
