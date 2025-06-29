@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(res => res.json())
     .then(ipData => {
       const ip = ipData.ip;
-      const amapKey = '你的高德Key'; // ← 请替换为你申请的高德 Key
+      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // ← 请替换为你申请的高德 Key
 
       fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
         .then(res => res.json())
