@@ -79,7 +79,11 @@
       bubble.style.left = `${Math.random() * 100}vw`;
       bubble.style.bottom = '10px';
       document.body.appendChild(bubble);
-      bubble.addEventListener('animationend', () => bubble.remove());
+      console.log('Bubble created at:', bubble.style.left, bubble.style.bottom); // 调试日志
+      bubble.addEventListener('animationend', () => {
+        bubble.remove();
+        console.log('Bubble removed');
+      });
     }
     setInterval(createBubble, 300);
 
@@ -95,17 +99,17 @@
     // 更新页脚信息，使用高德 API 获取 IP 和地区
     function updateFooterInfo() {
       const now = new Date();
-      const date = now.toLocaleString('zh-CN', { dateStyle: 'full' }); // 只显示日期
+      const date = now.toLocaleString('zh-CN', { dateStyle: 'full' });
       const amapKey = '85caef68c262151c986a61d063bbd5a9'; // 替换为你的高德 API 密钥
 
-      // 获取用户 IP 和地区
       fetch(`https://restapi.amap.com/v3/ip?key=${amapKey}&ip=`)
         .then(response => response.json())
         .then(data => {
+          console.log('API Response:', data); // 调试日志
           if (data.status === '1') {
             const hostInfo = {
-              cpu: '2.46% / 20.45% / 24.99%', // 模拟数据
-              memory: '65.32 MiB / 48.09 MiB', // 模拟数据
+              cpu: '2.46% / 20.45% / 24.99%',
+              memory: '65.32 MiB / 48.09 MiB',
               ip: data.ip || '未知',
               region: data.province || data.city || '未知地区'
             };
@@ -147,7 +151,7 @@
 
     // 初始加载和定时更新
     updateFooterInfo();
-    setInterval(updateFooterInfo, 10000); // 每 10 秒更新
+    setInterval(updateFooterInfo, 10000);
   </script>
 </body>
 </html>
