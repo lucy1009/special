@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Matrix-Style Footer</title>
+  <title>Custom Footer</title>
   <style>
     body {
       margin: 0;
-      font-family: 'MiSans', 'Courier New', monospace; /* 矩阵风格字体 */
+      font-family: 'MiSans', Arial, sans-serif;
       overflow-x: hidden;
       position: relative;
-      background: #000; /* 黑色背景 */
+      background: #000; /* 深色背景便于泡泡效果 */
     }
     footer {
       position: fixed;
@@ -40,11 +40,11 @@
       50% { transform: translateY(-10px); }
       100% { transform: translateY(0); }
     }
-    .matrix-stream {
+    .bubble {
       position: absolute;
-      font-size: 14px;
-      color: #00FF00; /* 亮绿色 */
-      animation: matrixFall 4s linear infinite;
+      border-radius: 50%;
+      background: rgba(0, 191, 255, 0.4); /* 半透明浅蓝色泡泡 */
+      animation: rise 5s linear infinite;
     }
     @media (max-width: 768px) {
       footer {
@@ -68,35 +68,28 @@
   </footer>
 
   <script>
-    // 矩阵字符集
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()+-=[]{}|;:,.<>?あいうえおかきくけこさしすせそ'.split('');
+    // 动态生成半透明泡泡
+    function createBubble() {
+      const bubble = document.createElement('div');
+      const size = Math.random() * 20 + 10;
+      bubble.className = 'bubble';
+      bubble.style.width = `${size}px`;
+      bubble.style.height = `${size}px`;
+      bubble.style.left = `${Math.random() * 100}vw`;
+      bubble.style.bottom = '-20px'; // 从下方生成
+      document.body.appendChild(bubble);
 
-    // 创建矩阵流
-    function createMatrixStream() {
-      const stream = document.createElement('div');
-      const length = Math.floor(Math.random() * 20) + 10; // 流长度 10-30
-      stream.className = 'matrix-stream';
-      stream.style.left = `${Math.random() * 100}vw`; // 随机横向位置
-      stream.style.top = '-50px'; // 从上方生成
-      let streamContent = '';
-
-      for (let i = 0; i < length; i++) {
-        streamContent += `<span style="opacity: ${1 - i / length}">${chars[Math.floor(Math.random() * chars.length)]}</span><br>`;
-      }
-      stream.innerHTML = streamContent;
-      document.body.appendChild(stream);
-
-      // 动画结束后移除流
-      stream.addEventListener('animationend', () => stream.remove());
+      // 动画结束后移除泡泡
+      bubble.addEventListener('animationend', () => bubble.remove());
     }
-    setInterval(createMatrixStream, 50); // 每 50ms 生成一个流
+    setInterval(createBubble, 300); // 每 300ms 生成一个泡泡
 
-    // 定义下落动画
+    // 定义上升动画
     const styleSheet = document.styleSheets[0];
     styleSheet.insertRule(`
-      @keyframes matrixFall {
-        0% { top: -50px; }
-        100% { top: 100vh; }
+      @keyframes rise {
+        0% { bottom: -20px; opacity: 0.8; }
+        100% { bottom: 100vh; opacity: 0; }
       }
     `, styleSheet.cssRules.length);
 
@@ -114,13 +107,13 @@
       document.getElementById('footer-info').innerHTML = `
         主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
         IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
-        日期: ${date} (2025-06-29 09:55 AM +08)
+        日期: ${date} (2025-06-29 10:00 AM +08)
       `;
     }
 
     // 初始加载和定时更新
     updateFooterInfo();
-    setInterval(updateFooterInfo, 10000);
+    setInterval(updateFooterInfo, 10000); // 每 10 秒更新
   </script>
 </body>
 </html>
