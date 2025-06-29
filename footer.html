@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Footer</title>
+  <title>Special Effect</title>
   <style>
     body {
       margin: 0;
       font-family: 'MiSans', Arial, sans-serif;
       overflow-x: hidden;
       position: relative;
-      background: #000;
+      background: transparent;
       min-height: 100vh;
     }
-    footer {
+    .effect-container {
       position: fixed;
       bottom: 0;
       width: 100%;
@@ -48,7 +48,7 @@
       animation: rise 5s linear forwards;
     }
     @media (max-width: 768px) {
-      footer {
+      .effect-container {
         flex-direction: column;
         padding: 5px 10px;
       }
@@ -63,10 +63,10 @@
   </style>
 </head>
 <body>
-  <footer>
-    <div class="info" id="footer-info"></div>
+  <div class="effect-container">
+    <div class="info" id="effect-info"></div>
     <img src="https://ik.sy66.eu.org:9528/image/logo01.png" alt="Cartoon Character" class="character">
-  </footer>
+  </div>
 
   <script>
     // 动态生成半透明泡泡，从底部开始向上飘
@@ -79,11 +79,7 @@
       bubble.style.left = `${Math.random() * 100}vw`;
       bubble.style.bottom = '10px';
       document.body.appendChild(bubble);
-      console.log('Bubble created at:', bubble.style.left, bubble.style.bottom); // 调试日志
-      bubble.addEventListener('animationend', () => {
-        bubble.remove();
-        console.log('Bubble removed');
-      });
+      bubble.addEventListener('animationend', () => bubble.remove());
     }
     setInterval(createBubble, 300);
 
@@ -96,62 +92,49 @@
       }
     `, styleSheet.cssRules.length);
 
-    // 更新页脚信息，使用高德 API 获取 IP 和地区
-    function updateFooterInfo() {
+    // 更新信息，使用动态日期和 IP
+    function updateEffectInfo() {
       const now = new Date();
-      const date = now.toLocaleString('zh-CN', { dateStyle: 'full' });
-      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // 替换为你的高德 API 密钥
+      const date = now.toLocaleString('zh-CN', { dateStyle: 'full' }); // 动态日期
+      const info = {
+        cpu: '2.46% / 20.45% / 24.99%', // 静态数据
+        memory: '65.32 MiB / 48.09 MiB', // 静态数据
+        ip: '加载中...', // 初始值
+        region: '加载中...' // 初始值
+      };
 
-      fetch(`https://restapi.amap.com/v3/ip?key=${amapKey}&ip=`)
+      // 获取公网 IP（使用免费 API）
+      fetch('https://api.ipify.org?format=json')
         .then(response => response.json())
         .then(data => {
-          console.log('API Response:', data); // 调试日志
-          if (data.status === '1') {
-            const hostInfo = {
-              cpu: '2.46% / 20.45% / 24.99%',
-              memory: '65.32 MiB / 48.09 MiB',
-              ip: data.ip || '未知',
-              region: data.province || data.city || '未知地区'
-            };
-            document.getElementById('footer-info').innerHTML = `
-              主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
-              IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
-              日期: ${date} (2025-06-29)
-            `;
-          } else {
-            console.error('Highde Maps API Error:', data.info);
-            const hostInfo = {
-              cpu: '2.46% / 20.45% / 24.99%',
-              memory: '65.32 MiB / 48.09 MiB',
-              ip: '112.117.5.132',
-              region: '中国'
-            };
-            document.getElementById('footer-info').innerHTML = `
-              主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
-              IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
-              日期: ${date} (2025-06-29)
-            `;
-          }
+          info.ip = data.ip;
+          // 使用 ipinfo.io 获取地区（免费，需网络支持）
+          return fetch(`https://ipinfo.io/${data.ip}/json`);
+        })
+        .then(response => response.json())
+        .then(data => {
+          info.region = data.country === 'CN' ? '中国' : data.region || '未知地区';
+          document.getElementById('effect-info').innerHTML = `
+            主机: CPU ${info.cpu} | 内存 ${info.memory}<br>
+            IP: ${info.ip} | 地区: ${info.region}<br>
+            日期: ${date} (2025-06-29)
+          `;
         })
         .catch(error => {
-          console.error('Fetch Error:', error);
-          const hostInfo = {
-            cpu: '2.46% / 20.45% / 24.99%',
-            memory: '65.32 MiB / 48.09 MiB',
-            ip: '112.117.5.132',
-            region: '中国'
-          };
-          document.getElementById('footer-info').innerHTML = `
-            主机: CPU ${hostInfo.cpu} | 内存 ${hostInfo.memory}<br>
-            IP: ${hostInfo.ip} | 地区: ${hostInfo.region}<br>
+          console.error('IP Fetch Error:', error);
+          info.ip = '112.117.5.132'; // 失败回滚
+          info.region = '中国';
+          document.getElementById('effect-info').innerHTML = `
+            主机: CPU ${info.cpu} | 内存 ${info.memory}<br>
+            IP: ${info.ip} | 地区: ${info.region}<br>
             日期: ${date} (2025-06-29)
           `;
         });
     }
 
     // 初始加载和定时更新
-    updateFooterInfo();
-    setInterval(updateFooterInfo, 10000);
+    updateEffectInfo();
+    setInterval(updateEffectInfo, 10000); // 每 10 秒更新
   </script>
 </body>
 </html>
