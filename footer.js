@@ -46,21 +46,18 @@ document.addEventListener('DOMContentLoaded', function () {
     return { os, browser };
   }
 
-  // 获取公网 IP（供高德使用）
   fetch('https://api.ipify.org?format=json')
     .then(res => res.json())
     .then(ipData => {
       const ip = ipData.ip;
-      const amapKey = '85caef68c262151c986a61d063bbd5a9'; // ← 请改成你自己的 key
+      const amapKey = '替换为你的高德Key'; // ← 请改成你自己的 key
 
-      // 调用高德 IP 接口
       fetch(`https://restapi.amap.com/v3/ip?ip=${ip}&key=${amapKey}`)
         .then(res => res.json())
         .then(locationData => {
           const province = locationData.province;
           const city = locationData.city;
 
-          // 如果返回为空或是数组（高德失败），使用 fallback
           if (!province || !city || Array.isArray(province) || Array.isArray(city)) {
             fallbackLoad(ip);
             return;
@@ -75,15 +72,10 @@ document.addEventListener('DOMContentLoaded', function () {
             🌐 您使用的是 ${browser} 浏览器
           `;
         })
-        .catch(() => {
-          fallbackLoad(ip);
-        });
+        .catch(() => fallbackLoad(ip));
     })
-    .catch(() => {
-      fallbackLoad('未知IP');
-    });
+    .catch(() => fallbackLoad('未知IP'));
 
-  // fallback：ipapi + 离线中文翻译
   function fallbackLoad(ip) {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
@@ -105,35 +97,5 @@ document.addEventListener('DOMContentLoaded', function () {
           🌐 您使用的是 ${browser} 浏览器
         `;
       });
-  }
-
-  // ✨ 荧光气泡特效
-  const style = document.createElement('style');
-  style.innerHTML = `
-    .glow-dot {
-      position: fixed;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0,255,255,0.8) 0%, rgba(0,255,255,0.1) 100%);
-      box-shadow: 0 0 8px rgba(0,255,255,0.6);
-      pointer-events: none;
-      animation: float-glow linear infinite;
-    }
-    @keyframes float-glow {
-      from { transform: translateY(0) scale(1); opacity: 1; }
-      to { transform: translateY(-100vh) scale(0.5); opacity: 0; }
-    }
-  `;
-  document.head.appendChild(style);
-
-  for (let i = 0; i < 40; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'glow-dot';
-    dot.style.left = Math.random() * 100 + 'vw';
-    dot.style.bottom = Math.random() * window.innerHeight + 'px';
-    dot.style.animationDuration = (4 + Math.random() * 4).toFixed(2) + 's';
-    dot.style.animationDelay = (Math.random() * 5).toFixed(2) + 's';
-    document.body.appendChild(dot);
   }
 });
